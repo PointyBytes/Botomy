@@ -1,3 +1,6 @@
+# From Botomy Quickstart Tutorial
+# https://botomy.github.io/Botomy/docs/getting-started/quickstart-tutorial
+
 from models import LevelData, Move
 from typing import List
 
