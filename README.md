@@ -2,6 +2,10 @@
 
 This repository is my humble shrine to bad decisions, questionable logic, and the timeless struggle of a programmer attempting to gaslight himself into believing he's a **Pythonista** and, eventually, make Python do what I want *on purpose*. It begins as a simple attempt to build a Botomy bot using Python and an API. It will almost certainly evolve into a slowly expanding archive of "features" (a polite way of saying demented attempts) that psychologists may one day interpret as an early warning sign of my impending mental decline.
 
+## About the Game
+If you'd like to see the digital arena where my bot makes its poor life choices, you can find the game here:
+> [Botomy](https://botomy.com/)
+
 ## Project Purpose
 
 This is not a polished showcase. This is a survival log.
@@ -50,12 +54,11 @@ Targeting accuracy is subpar. Threat assessment is nonexistent. Decision-making 
 * Eventually upgrade from "sentient rock" to "confused intern"
 
 ## Licensing and Attribution
-
-A direct copy of the `models.py` file was taken from the **Botomy Python Starter** project:
+This project is based on the **Botomy Python Starter** project:
 > [FastAPI Project Starter](https://github.com/botomy/botomy-python-starter)
 
 The original project uses the MIT License, which is permissive enough to allow copying, modification, and redistribution. This repository continues under the MIT License for compatibility and to ensure that others may one day build upon (or mercifully fix) what I have created.
 
 ---
 
-If you're reading this early version, please assume every bug, mistake, and **mispselling** is entirely unintentional and the result of my ongoing battle with both Python and my own questionable life choices, thank you!
+If you're reading this early version, please assume every bug, mistake, and **mispselling** is entirely unintentional and the result of my ongoing battle with both Python and my own questionable life choices. Thank you!
