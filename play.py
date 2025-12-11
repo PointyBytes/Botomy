@@ -1,11 +1,13 @@
 # play.py
 
-from models import LevelData, Move
-from typing import Dict, List
 from math import dist
+from models import LevelData
+from typing import Dict, List
 
-ATTACK_RANGE = 50
-LOW_HP_THRESHOLD = 0.30
+
+# Constants
+ATTACK_RANGE = 50  # Example attack range
+LOW_HP_THRESHOLD = 0.40  # 40% health threshold
 
 
 def distance(a, b):
@@ -53,64 +55,53 @@ def engage_target(player, target, moves):
     return moves
 
 
-def play(level_data: dict) -> list:
-    player = level_data["own_player"]
-    p_pos = player["position"]
+def play(level_data: dict) -> List[dict]:
+    """
+    Entry point called by the game server. Convert the raw dict to LevelData
+    for type safety and convenience methods, then run the AI logic.
+    """
+    # Convert dict -> LevelData model (Pydantic v2 style)
+    data = LevelData.model_validate(level_data)
+
+    me = data.own_player
     moves = []
 
-    enemies = level_data.get("enemies", [])
-    items = level_data.get("items", [])
+    # Survival check using model fields
+    if me.health <= me.max_health * LOW_HP_THRESHOLD:
+        # example: prefer big_potion
+        if me.items.big_potions > 0:
+            moves.append({"use": "big_potion"})
+            return moves
+        # if you had a normal potion field, you'd check that here
 
-    # ---------------------------------------------------------------------
-    # PHASE 1 — Survival: heal first if needed
-    # ---------------------------------------------------------------------
-    if player["health"] <= player["max_health"] * LOW_HP_THRESHOLD:
-        if drink_potion(player, moves):
-            return moves  # healing is priority
+    # Build lists of living enemies and items
+    living_enemies = [e for e in data.enemies if e.is_alive()]
+    items = data.items  # these are Item models
 
-    # ---------------------------------------------------------------------
-    # PHASE 2 — Filter out dead or irrelevant targets
-    # ---------------------------------------------------------------------
-    living_enemies = [e for e in enemies if is_attackable(e)]
-    valid_items = [i for i in items if i.get("type") != "dead"]
+    # Find closest chest first (using Position.distance())
+    chests = [
+        i for i in items if i.type == "chest" and (i.health is None or i.health > 0)
+    ]
+    closest_chest = None
+    if chests:
+        closest_chest = min(chests, key=lambda c: me.position.distance(c.position))
 
-    # Split chests from other items
-    chests = [i for i in valid_items if is_chest(i)]
-    non_chest_items = [i for i in valid_items if not is_chest(i)]
-
-    # ---------------------------------------------------------------------
-    # PHASE 3 — Determine closest target per category
-    # ---------------------------------------------------------------------
-    def closest(entities):
-        if not entities:
-            return None, float("inf")
-        annotated = [(e, distance(p_pos, e["position"])) for e in entities]
-        return min(annotated, key=lambda t: t[1])
-
-    closest_chest, dist_chest = closest(chests)
-    closest_item, dist_item = closest(non_chest_items)
-    closest_enemy, dist_enemy = closest(living_enemies)
-
-    # ---------------------------------------------------------------------
-    # PHASE 4 — Priority selection
-    # ---------------------------------------------------------------------
-    # Priority order:
-    #   1. Chest (if any)
-    #   2. Closest enemy vs closest item (whichever is nearer)
+    # If chest exists, go for it
     if closest_chest:
-        target = closest_chest
-    else:
-        # No chest → choose nearest of enemy or item
-        if closest_item and closest_enemy:
-            target = closest_item if dist_item < dist_enemy else closest_enemy
+        d = me.position.distance(closest_chest.position)
+        if (closest_chest.health or 0) > 0:
+            # attackable chest
+            if d <= ATTACK_RANGE:
+                moves.append("attack")
+            else:
+                moves.append({"move_to": closest_chest.position.dict()})
         else:
-            target = closest_item or closest_enemy
-
-    if not target:
-        moves.append({"debug_info": {"message": "No targets available."}})
+            moves.append({"move_to": closest_chest.position.dict()})
         return moves
 
-    # ---------------------------------------------------------------------
-    # PHASE 5 — Engage target
-    # ---------------------------------------------------------------------
-    return engage_target(player, target, moves)
+    # Otherwise decide between nearest item and nearest enemy (simple heuristic)
+    # ... you can reuse earlier logic but call position.distance(...) and enemy.is_alive() etc.
+
+    # fallback
+    moves.append({"debug_info": {"message": "Nothing to do right now."}})
+    return moves
