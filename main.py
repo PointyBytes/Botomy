@@ -7,7 +7,7 @@ app = FastAPI()
 
 @app.post("/")
 async def post(request: LevelData):
-    return play(LevelData.model_dump(request))
+    return play(request)
 
 
 # Run the application with uvicorn

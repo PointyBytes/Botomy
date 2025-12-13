@@ -1,11 +1,6 @@
-# models.py
-# From Botomy Python Starter
-# https://github.com/botomy/botomy-python-starter
-
-from enum import Enum
-from math import hypot
 from pydantic import BaseModel
-from typing import List, Literal, Union, Dict, Optional
+from typing import List, Literal, Union, Any, Dict, Optional
+from enum import Enum
 
 
 # Enums and Type Aliases
@@ -32,10 +27,6 @@ GameObjectType = Union[PlayerType, ALL_ENEMIES, ItemType, HazardType]
 class Position(BaseModel):
     x: float
     y: float
-
-    def distance(self, other: "Position") -> float:
-        """Euclidean distance between two positions."""
-        return hypot(self.x - other.x, self.y - other.y)
 
 
 class GameObject(BaseModel):
@@ -64,53 +55,7 @@ class Character(GameObject):
 
 
 class Enemy(Character):
-    """
-    Enemy inherits all Character fields.
-    Add small convenience helpers for behaviour / priority decisions.
-    """
-
-    def is_alive(self) -> bool:
-        """Return True if this enemy currently has > 0 health."""
-        return getattr(self, "health", 0) > 0
-
-    def danger_score(self) -> float:
-        """
-        Return a small numeric score representing how 'dangerous' the enemy is.
-        This is intentionally simple and tunable:
-          - higher score => more dangerous => avoid or deprioritize unless high reward
-        Current formula:
-          base by type + fraction of max health.
-        """
-        # base type danger
-        base = 0.0
-        if self.type == "wolf":
-            base = 30.0
-        elif self.type == "ghoul":
-            base = 50.0
-        elif self.type == "minotaur":
-            base = 90.0
-        elif self.type == "tiny":
-            base = 70.0
-
-        # scale with current health fraction (relative threat still alive)
-        max_h = getattr(self, "max_health", None) or 1.0
-        fraction = getattr(self, "health", 0) / max_h
-        return base * fraction
-
-    def preferred_counter(self) -> Optional[str]:
-        """
-        Hint for which tool/strategy is effective vs this enemy type.
-        Returns a short string you can map to actual moves in play.py.
-        """
-        if self.type == "wolf":
-            return "speed_zapper"
-        if self.type == "ghoul":
-            return "shield_or_potion"
-        if self.type == "minotaur":
-            return "kite"
-        if self.type == "tiny":
-            return "cloak_or_ring"
-        return None
+    pass
 
 
 class Collision(BaseModel):
@@ -204,7 +149,7 @@ class LevelData(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> "LevelData":
-        return cls.model_validate_json(json_str)
+        return cls.parse_raw(json_str)
 
 
 class DebugInfo(BaseModel):

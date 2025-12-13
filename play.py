@@ -1,107 +1,65 @@
-# play.py
-
-from math import dist
-from models import LevelData
-from typing import Dict, List
-
-
-# Constants
-ATTACK_RANGE = 50  # Example attack range
-LOW_HP_THRESHOLD = 0.40  # 40% health threshold
+from models import LevelData, Move, Position, GameObject, Enemy
+from typing import Dict, List, Optional, TypedDict, Any
+import math
+import random
 
 
-def distance(a, b):
-    return dist((a["x"], a["y"]), (b["x"], b["y"]))
+def dist_to(a: Position, b: Position) -> float:
+    # Use dot notation to access attributes of Position
+    return math.sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2))
 
 
-def is_attackable(entity: dict) -> bool:
-    return "health" in entity and entity["health"] is not None and entity["health"] > 0
+def get_closest_item(
+    position: Position, items: List[GameObject]
+) -> Optional[GameObject]:
+    min_dist = float("inf")
+    target = None
+
+    for item in items:
+        dist = dist_to(position, item.position)
+        if dist < min_dist:
+            min_dist = dist
+            target = item
+
+    return target
 
 
-def is_chest(entity: dict) -> bool:
-    return entity.get("type") == "chest"
-
-
-def drink_potion(player, moves):
-    items = player["items"]
-
-    # Prefer big potions
-    if items.get("big_potions", 0) > 0:
-        moves.append({"use": "big_potion"})
-        return True
-
-    # Fall back to normal potions
-    if items.get("potions", 0) > 0:
-        moves.append({"use": "potion"})
-        return True
-
-    return False
-
-
-def engage_target(player, target, moves):
-    p_pos = player["position"]
-    t_pos = target["position"]
-    d = distance(p_pos, t_pos)
-
-    if is_attackable(target):
-        if d <= ATTACK_RANGE:
-            moves.append("attack")
-        else:
-            moves.append({"move_to": t_pos})
-    else:
-        # Non-attackable item (coins etc.)
-        moves.append({"move_to": t_pos})
-
-    return moves
-
-
-def play(level_data: dict) -> List[dict]:
-    """
-    Entry point called by the game server. Convert the raw dict to LevelData
-    for type safety and convenience methods, then run the AI logic.
-    """
-    # Convert dict -> LevelData model (Pydantic v2 style)
-    data = LevelData.model_validate(level_data)
-
-    me = data.own_player
+def play(level_data: LevelData) -> List[Move]:
     moves = []
+    own_player = level_data.own_player
+    players = level_data.players
+    items = level_data.items
 
-    # Survival check using model fields
-    if me.health <= me.max_health * LOW_HP_THRESHOLD:
-        # example: prefer big_potion
-        if me.items.big_potions > 0:
-            moves.append({"use": "big_potion"})
-            return moves
-        # if you had a normal potion field, you'd check that here
+    # Build a list of potential targets (items, enemies, etc.)
+    potential_targets = items + level_data.enemies
 
-    # Build lists of living enemies and items
-    living_enemies = [e for e in data.enemies if e.is_alive()]
-    items = data.items  # these are Item models
+    # Get the closest item to your own player's position
+    target = get_closest_item(own_player.position, potential_targets)
 
-    # Find closest chest first (using Position.distance())
-    chests = [
-        i for i in items if i.type == "chest" and (i.health is None or i.health > 0)
-    ]
-    closest_chest = None
-    if chests:
-        closest_chest = min(chests, key=lambda c: me.position.distance(c.position))
-
-    # If chest exists, go for it
-    if closest_chest:
-        d = me.position.distance(closest_chest.position)
-        if (closest_chest.health or 0) > 0:
-            # attackable chest
-            if d <= ATTACK_RANGE:
+    if target:
+        if target.type in ["wolf", "ghoul", "minotaur", "tiny"]:
+            if dist_to(own_player.position, target.position) < 125:
                 moves.append("attack")
-            else:
-                moves.append({"move_to": closest_chest.position.dict()})
-        else:
-            moves.append({"move_to": closest_chest.position.dict()})
-        return moves
+                moves.append("shield")
+        moves.append({"move_to": target.position})
+    else:
+        print("no target found")
 
-    # Otherwise decide between nearest item and nearest enemy (simple heuristic)
-    # ... you can reuse earlier logic but call position.distance(...) and enemy.is_alive() etc.
+    if own_player.health / own_player.max_health < 0.51:
+        # health is less than 50% so use the potion to heal
+        moves.append({"use": "big_potion"})
 
-    # fallback
-    moves.append({"debug_info": {"message": "Nothing to do right now."}})
+    if own_player.levelling.available_skill_points > 0:
+        # skill points available - level up
+        skill = random.choice(["attack", "health", "speed"])
+        moves.append({"redeem_skill_point": skill})
+
+    moves.append(
+        {
+            "debug_info": {
+                "target_id": target.id if target else None,
+                "message": "oh hai",
+            }
+        }
+    )
     return moves
