@@ -149,7 +149,7 @@ class LevelData(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> "LevelData":
-        return cls.parse_raw(json_str)
+        return cls.model_validate_json(json_str)
 
 
 class DebugInfo(BaseModel):
