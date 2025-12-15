@@ -7,11 +7,21 @@ import random
 ATTACK_RANGE = 125
 LOW_HEALTH_THRESHOLD = 0.51
 INVENTORY_MAX = {"big_potion": 6, "speed_zapper": 5, "ring": 5}
+LEVEL_UP_SKILL_WEIGHTS = {"attack": 5, "health": 3, "speed": 2}
+
 ITEM_TO_ATTRIBUTE = {
     "big_potion": "big_potions",
     "speed_zapper": "speed_zappers",
     "ring": "rings",
 }
+
+# Working on:
+# TODO: Implement leveling strategy
+
+# List of tasks:
+# TODO: Implement combat logic &, item usage
+# TODO: Implement special attack logic
+# TODO: Implement sofisticated item pickup strategy
 
 
 def dist_to(a: Position, b: Position) -> float:
@@ -37,14 +47,6 @@ def get_closest_item(
 def filter_pickable_items(items, own_player) -> List[GameObject]:
     """Return all world items the player is allowed to pick up, given current inventory limits."""
 
-    # TODO: Filtering logic
-    # 1. Iterate over world items
-    # 2. For each item:
-    #     2.1. Decide whether it is limited
-    #     2.2. If limited, compare player_inv vs max
-    #     2.3. If allowed, append to filtered_list
-    # 3. Return filtered_list
-
     filtered_items = []
     inventory = own_player.items
     for item in items:
@@ -56,6 +58,18 @@ def filter_pickable_items(items, own_player) -> List[GameObject]:
         else:
             filtered_items.append(item)
     return filtered_items
+
+
+def select_level_up_skill() -> str:
+    """Randomly select a skill to level up based on predefined weights."""
+    # TODO: Add error handling for empty or negative weights
+    skill_list = list(LEVEL_UP_SKILL_WEIGHTS.keys())
+    weights = list(LEVEL_UP_SKILL_WEIGHTS.values())
+
+    return random.choices(
+        population=skill_list,
+        weights=weights,
+    )[0]
 
 
 def play(level_data: LevelData) -> List[Move]:
@@ -72,7 +86,7 @@ def play(level_data: LevelData) -> List[Move]:
     """
     moves = []
     own_player = level_data.own_player
-    players = level_data.players
+    players = level_data.players  # Unused for now but may be useful later
     items = level_data.items
 
     # Build a list of potential targets (items, enemies, etc.)
@@ -94,11 +108,9 @@ def play(level_data: LevelData) -> List[Move]:
         # health is less than 50% so use the potion to heal
         moves.append({"use": "big_potion"})
 
-    # TODO: Add logic for leveling up skills acording to my strategy
     if own_player.levelling.available_skill_points > 0:
         # skill points available - level up
-        skill = random.choice(["attack", "health", "speed"])
-        moves.append({"redeem_skill_point": skill})
+        moves.append({"redeem_skill_point": select_level_up_skill()})
 
     moves.append(
         {
