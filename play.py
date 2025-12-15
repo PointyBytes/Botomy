@@ -7,6 +7,7 @@ import random
 ATTACK_RANGE = 125
 LOW_HEALTH_THRESHOLD = 0.51
 INVENTORY_MAX = {"big_potion": 6, "speed_zapper": 5, "ring": 5}
+# Weights for skills can not be zero or negative
 LEVEL_UP_SKILL_WEIGHTS = {"attack": 5, "health": 3, "speed": 2}
 
 ITEM_TO_ATTRIBUTE = {
@@ -15,10 +16,7 @@ ITEM_TO_ATTRIBUTE = {
     "ring": "rings",
 }
 
-# Working on:
-# TODO: Implement leveling strategy
-
-# List of tasks:
+# Work in progress:
 # TODO: Implement combat logic &, item usage
 # TODO: Implement special attack logic
 # TODO: Implement sofisticated item pickup strategy
@@ -63,6 +61,7 @@ def filter_pickable_items(items, own_player) -> List[GameObject]:
 def select_level_up_skill() -> str:
     """Randomly select a skill to level up based on predefined weights."""
     # TODO: Add error handling for empty or negative weights
+    # TODO: Test for a potential edge case where hp is low and if leveling health gives full hp
     skill_list = list(LEVEL_UP_SKILL_WEIGHTS.keys())
     weights = list(LEVEL_UP_SKILL_WEIGHTS.values())
 
