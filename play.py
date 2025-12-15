@@ -6,7 +6,7 @@ import random
 # Constants
 ATTACK_RANGE = 125
 LOW_HEALTH_THRESHOLD = 0.51
-INVENTORY_MAX = {"big_potion": 5, "speed_zapper": 5, "ring": 5}
+INVENTORY_MAX = {"big_potion": 6, "speed_zapper": 5, "ring": 5}
 ITEM_TO_ATTRIBUTE = {
     "big_potion": "big_potions",
     "speed_zapper": "speed_zappers",
@@ -46,10 +46,11 @@ def filter_pickable_items(items, own_player) -> List[GameObject]:
     # 3. Return filtered_list
 
     filtered_items = []
-    inventory = own_player.inventory
+    inventory = own_player.items
     for item in items:
         if item.type in INVENTORY_MAX:
-            current_count = inventory.get(item.type, 0)
+            attribute_name = ITEM_TO_ATTRIBUTE[item.type]
+            current_count = getattr(inventory, attribute_name)
             if current_count < INVENTORY_MAX[item.type]:
                 filtered_items.append(item)
         else:
