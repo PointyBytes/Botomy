@@ -1,25 +1,34 @@
 from models import LevelData, Move, Position, GameObject, Enemy
-from typing import Dict, List, Optional, TypedDict, Any, Sequence
+from typing import Dict, List, Optional, Sequence, Any
 import math
 import random
 
-# Constants
-ATTACK_RANGE = 125
-LOW_HEALTH_THRESHOLD = 0.51
-INVENTORY_MAX = {"big_potion": 6, "speed_zapper": 5, "ring": 5}
-# Weights for skills can not be zero or negative
-LEVEL_UP_SKILL_WEIGHTS = {"attack": 5, "health": 3, "speed": 2}
+# --- Combat and environment constants ---
+ATTACK_RANGE: int = 125
 
-ITEM_TO_ATTRIBUTE = {
+# --- AI tuning constants ---
+LOW_HEALTH_THRESHOLD: float = 0.51
+# Weights for skills can not be zero or negative
+LEVEL_UP_SKILL_WEIGHTS: Dict[str, int | float] = {"attack": 5, "health": 3, "speed": 2}
+
+# --- Inventory rules ---
+INVENTORY_MAX: Dict[str, int] = {"big_potion": 6, "speed_zapper": 5, "ring": 5}
+ITEM_TO_ATTRIBUTE: Dict[str, str] = {
     "big_potion": "big_potions",
     "speed_zapper": "speed_zappers",
     "ring": "rings",
 }
 
 # Work in progress:
+# TODO: Refacor play() order to fit my preferred stepwise logic
 # TODO: Implement combat logic &, item usage
 # TODO: Implement special attack logic
-# TODO: Implement sofisticated item pickup strategy
+# TODO: Implement sofisticated item pickup prioritization
+# TODO: Implement escape & evasion logic
+# TODO: Implement different strategies based on game_info.game_type
+
+# Flavor and fun:
+# TODO: Implement heroic battle cries and taunts
 
 
 def dist_to(a: Position, b: Position) -> float:
@@ -71,29 +80,44 @@ def select_level_up_skill() -> str:
     )[0]
 
 
+def build_debug_message(message: str, **kwargs: Any) -> Dict[str, Any]:
+    """
+    Create a debug message dictionary.
+    Args:
+        message (str): The main debug message.
+        **kwargs: Additional key-value pairs to include in the debug info.
+    Returns:
+        Dict[str, Any]: A dictionary containing the debug information.
+    """
+    return {"debug_info": {"message": message, **kwargs}}
+
+
 def play(level_data: LevelData) -> List[Move]:
     """
     Main decision function for the bot.
 
     Steps:
-    1. Filter world items based on inventory limits.
-    2. Identify closest target (item or enemy).
-    3. Decide combat actions (attack/shield).
-    4. Use items if necessary (healing potions, power-ups).
-    5. Redeem available skill points.
-    6. Return list of moves for this turn.
+    1. Gather current game state
+    2. Determine valid targets
+    3. Select primary target
+    4. Execute movement and combat
+    5. Apply survival logic (healing, escape)
+    6. Handle progression (level-up)
+    7. Attach debug information
     """
+    # --- 1. Gather current game state ---
     moves = []
     own_player = level_data.own_player
     players = level_data.players  # Unused for now but may be useful later
     items = level_data.items
 
-    # Build a list of potential targets (items, enemies, etc.)
+    # --- 2. Determine valid targets ---
     potential_targets = filter_pickable_items(items, own_player) + level_data.enemies
 
-    # Get the closest item to your own player's position
+    # --- 3. Select primary target ---
     target = get_closest_item(own_player.position, potential_targets)
 
+    # --- 4. Execute movement and combat ---
     if target:
         if target.type in ["wolf", "ghoul", "minotaur", "tiny"]:
             if dist_to(own_player.position, target.position) < ATTACK_RANGE:
@@ -103,14 +127,15 @@ def play(level_data: LevelData) -> List[Move]:
     else:
         print("no target found")
 
+    # --- 5. Apply survival logic (healing, escape) ---
     if own_player.health / own_player.max_health < LOW_HEALTH_THRESHOLD:
-        # health is less than 50% so use the potion to heal
         moves.append({"use": "big_potion"})
 
+    # --- 6. Handle progression (level-up) ---
     if own_player.levelling.available_skill_points > 0:
-        # skill points available - level up
         moves.append({"redeem_skill_point": select_level_up_skill()})
 
+    # --- 7. Attach debug information ---
     moves.append(
         {
             "debug_info": {
@@ -119,4 +144,5 @@ def play(level_data: LevelData) -> List[Move]:
             }
         }
     )
+
     return moves
