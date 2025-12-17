@@ -1,3 +1,4 @@
+from flavor import FLAVOR_PHRASES
 from models import LevelData, Move, Position, GameObject, Enemy
 from typing import Dict, List, Optional, Sequence, Any
 import math
@@ -18,6 +19,8 @@ ITEM_TO_ATTRIBUTE: Dict[str, str] = {
     "speed_zapper": "speed_zappers",
     "ring": "rings",
 }
+# Other constants and configurations
+ADD_FLAVOR: bool = True
 
 # Work in progress:
 # TODO: Refacor play() order to fit my preferred stepwise logic
@@ -80,6 +83,19 @@ def select_level_up_skill() -> str:
     )[0]
 
 
+def build_flavor_message(action: str) -> Dict[str, str]:
+    """
+    Create a flavor message dictionary based on the action.
+    Args:
+        action (str): The action type (e.g., "attack", "pickup").
+    Returns:
+        Dict[str, str]: A dictionary containing the flavor message.
+    """
+    phrases = FLAVOR_PHRASES.get(action)
+    message = random.choice(phrases) if phrases else "404 Action Cry Not Found!"
+    return {"speak": message}
+
+
 def build_debug_message(message: str, **kwargs: Any) -> Dict[str, Any]:
     """
     Create a debug message dictionary.
@@ -98,50 +114,65 @@ def play(level_data: LevelData) -> List[Move]:
 
     Steps:
     1. Gather current game state
-    2. Determine valid targets
-    3. Select primary target
-    4. Execute movement and combat
-    5. Apply survival logic (healing, escape)
-    6. Handle progression (level-up)
-    7. Attach debug information
+    2. Handle progression (level-up)
+    3. Apply survival logic (healing, escape)
+    4. Determine valid targets
+    5. Select primary target
+    6. Execute movement and combat
     """
+    # TODO: Attach debug information at each step for better traceability
+    # TODO: Refactor steps to match the listed order above
+
     # --- 1. Gather current game state ---
     moves = []
     own_player = level_data.own_player
     players = level_data.players  # Unused for now but may be useful later
     items = level_data.items
 
-    # --- 2. Determine valid targets ---
+    # --- 2. Handle progression (level-up) ---
+    if own_player.levelling.available_skill_points > 0:
+        moves.append({"redeem_skill_point": select_level_up_skill()})
+
+    # --- 3. Apply survival logic (healing, escape) ---
+    if own_player.health / own_player.max_health < LOW_HEALTH_THRESHOLD:
+        moves.append({"use": "big_potion"})
+        if ADD_FLAVOR:
+            moves.append(build_flavor_message("heal"))
+
+    # --- 4. Determine valid targets ---
     potential_targets = filter_pickable_items(items, own_player) + level_data.enemies
 
-    # --- 3. Select primary target ---
+    # --- 5. Select primary target ---
     target = get_closest_item(own_player.position, potential_targets)
+    moves.append(
+        {
+            "debug_info": build_debug_message(
+                "Current Target",
+                target_type=target.type if target else "None",
+            )
+        }
+    )
 
-    # --- 4. Execute movement and combat ---
+    # --- 6. Execute movement and combat ---
     if target:
         if target.type in ["wolf", "ghoul", "minotaur", "tiny"]:
             if dist_to(own_player.position, target.position) < ATTACK_RANGE:
                 moves.append("attack")
                 moves.append("shield")
+                if ADD_FLAVOR:
+                    moves.append(build_flavor_message("attack"))
         moves.append({"move_to": target.position})
     else:
         print("no target found")
 
-    # --- 5. Apply survival logic (healing, escape) ---
-    if own_player.health / own_player.max_health < LOW_HEALTH_THRESHOLD:
-        moves.append({"use": "big_potion"})
-
-    # --- 6. Handle progression (level-up) ---
-    if own_player.levelling.available_skill_points > 0:
-        moves.append({"redeem_skill_point": select_level_up_skill()})
-
     # --- 7. Attach debug information ---
     moves.append(
         {
-            "debug_info": {
-                "target_id": target.id if target else None,
-                "message": "oh hai",
-            }
+            "debug_info": build_debug_message(
+                "Current Target",
+                target_type=target.type if target else "None",
+                target_position=target.position if target else "N/A",
+            )
         }
     )
 
