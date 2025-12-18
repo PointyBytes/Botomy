@@ -1,64 +1,119 @@
 # Botomy Python Bot
 
-This repository is my humble shrine to bad decisions, questionable logic, and the timeless struggle of a programmer attempting to gaslight himself into believing he's a **Pythonista** and, eventually, make Python do what I want *on purpose*. It begins as a simple attempt to build a Botomy bot using Python and an API. It will almost certainly evolve into a slowly expanding archive of "features" (a polite way of saying demented attempts) that psychologists may one day interpret as an early warning sign of my impending mental decline.
+This repository is a carefully curated museum of ambition, overthinking, and the gradual realization that the first solution was _technically correct_ but **structurally cursed**.
+
+What began as a simple attempt to build a Botomy bot in Python has now entered its second phase:  
+a slow, deliberate transition away from a _tick-by-tick, reactionary “bothavior” model_ and toward a **state-driven bot architecture**.
+
+This is not a glow-up.  
+This is a controlled demolition followed by rebuilding with slightly better blueprints and marginally less hubris.
+
+---
 
 ## About the Game
-If you'd like to see the digital arena where my bot makes its poor life choices, you can find the game here:
+If you’d like to witness the digital arena where this bot repeatedly questions its life choices, the game lives here:
 > [Botomy](https://botomy.com/)
+
+---
 
 ## Project Purpose
 
-This is not a polished showcase. This is a survival log.
+This is still not a polished showcase.  
+It is now also not pretending to be one.
 
-It exists so I can:
-* Communicate with the Botomy API without immediately catastrophic results
-* Parse and interpret game state while pretending I understand any of it
-* Make movement and combat decisions that sometimes resemble intent
-* Iteratively improve the bot as I descend deeper into the documentation—and the abyss
+This repository exists so I can:
+- Learn how to structure non-trivial behavior without duct tape and vibes
+- Explore state-driven AI patterns in a real, hostile environment
+- Understand _why_ my previous approach felt increasingly brittle
+- Make mistakes in public and document them so future-me can sigh knowingly
 
-At this infant stage, the bot behaves like a confused Roomba with anger issues. Its priorities are unclear, its targeting is bad, and its sense of direction is—charitably—experimental.
+The original bot made decisions every tick, reacted to everything immediately, and slowly evolved into a tangled mass of conditionals, edge cases, and regret. It _worked_, but only in the way a shopping cart with one bad wheel technically moves forward.
 
-But the plan is to refine this chaos into something resembling a strategy and not something pasted together from a tutorial...
+Rather than endlessly refactoring that model, I’ve chosen to **retire it with honors** and start fresh.
 
-Someday...
+---
 
-**Maybe**.....
+## Architectural Shift: From Behavior to State
+
+The old bot logic has been archived.
+
+It was:
+- reactive
+- stateless
+- increasingly difficult to reason about
+- very good at oscillating between two bad decisions
+
+The new bot will be:
+- **state-driven**
+- explicit about intent
+- aware of transitions (tracking → attacking → fleeing, etc.)
+- slower to write, but easier to reason about
+    
+
+This is my first serious attempt at building a state machine ever, not only for gameplay AI.  
+If this feels like I’ve discovered fire and immediately decided to invent metallurgy, that’s probably an accurate observation.
+
+This may be Dunning–Kruger in action.  
+Or it may be me finally noticing the slope.
+
+Time will tell.
+
+---
+
+## Repository Structure (Evolving)
+
+- `archive/`  
+    Contains the retired behavior-driven bot. It remains preserved as a reference, warning, and historical artifact.
+- `bot/`  
+    The new state-driven bot implementation. This is where all new development happens.
+- `bot/data/`  
+    Bot-specific personality, flavor text, and transitional behavior data.  
+    This is intentionally isolated from game logic and may be abused for humor.    
+- `main.py`  
+    The boring, responsible adult. Wires the bot to the API and stays out of the way.
+
+The structure is expected to change as understanding improves and assumptions collapse.
+
+---
 
 ## Current Status
 
-The bot currently:
+At present, the bot:
+- Exists in two forms: archived and structural skeleton
+- Has a functioning legacy implementation
+- Has a new skeleton waiting for states to inhabit it    
+- Is undergoing a philosophical crisis about identity and intent
 
-* Connects to the game (usually)
-* Receives game state (when it feels like it)
-* Responds with extremely rudimentary logic (blame me, not the game):
-  * The bot runs at enemies swinging a sword (hoping to connect)
-  * The bot also runs toward shiny things like a magpie (which are immeasurably more intelligent and graceful)
+No promises are made about stability, performance, or wisdom.
 
-Targeting accuracy is subpar. Threat assessment is nonexistent. Decision-making is experimental. Everything else is duct tape, hubris, and the faint whisper of hope.
+---
 
 ## Roadmap
 
 ### Short-Term
-
-* **Get gooder**
-* Learn to determine whether an item or an enemy is closer without summoning cosmic dread
-* Check distance before attacking instead of blindly running at enemies like a medieval peasant waving a sword and hoping for the best
-* Add heroic battlecries (for the bot's morale, not its effectiveness)
-* Pretend to understand abstractions
+- Define a minimal, sane state interface
+- Implement basic states (idle, seek, engage, flee)
+- Make transitions explicit instead of accidental
+- Avoid reinventing a worse behavior tree
 
 ### Long-Term
-
-* Make everything more sophisticated
-* Improve logic so the bot stops operating at my intellectual level
-* Add sophisticated yet heroic battlecries (to inspire fellow comrades)
-* Eventually upgrade from "sentient rock" to "confused intern"
-
-## Licensing and Attribution
-This project is based on the **Botomy Python Starter** project:
-> [FastAPI Project Starter](https://github.com/botomy/botomy-python-starter)
-
-The original project uses the MIT License, which is permissive enough to allow copying, modification, and redistribution. This repository continues under the MIT License for compatibility and to ensure that others may one day build upon (or mercifully fix) what I have created.
+- Improve threat assessment and pathing
+- Introduce item usage and conditional behaviors
+- Expand state transitions without creating spaghetti    
+- Graduate from “confused intern” to “junior developer with opinions”
+    
 
 ---
 
-If you're reading this early version, please assume every bug, mistake, and **mispselling** is entirely unintentional and the result of my ongoing battle with both Python and my own questionable life choices. Thank you!
+## Licensing and Attribution
+The old archived bot was based on the **Botomy Python Starter** project with duct tape and hope holding my functions together:
+
+> [Botomy Python Starter](https://github.com/botomy/botomy-python-starter)
+
+It remains under the MIT License, because freedom is important — especially the freedom for others to learn from or fix my mistakes.
+
+---
+
+If you’re reading this version of the repository, please assume that any architectural decisions are **tentative**, any bugs are **intentional learning opportunities**, and any misspellings are the result of prolonged exposure to Python and existential doubt.
+
+Thank you for your patience.

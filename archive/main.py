@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from bot.orchestrator import play
+from play import play
 from models import LevelData  # Import LevelData from models
 
 app = FastAPI()
