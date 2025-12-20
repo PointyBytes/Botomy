@@ -63,7 +63,7 @@ Time will tell.
 ## Repository Structure (Evolving)
 
 - `archive/`  
-    Contains the retired behavior-driven bot. It remains preserved as a reference, warning, and historical artifact.
+    Contains the retired behavior-driven (“bothavior”) bot. It remains preserved as a reference, warning, and historical artifact.
 - `bot/`  
     The new state-driven bot implementation. This is where all new development happens.
 - `bot/data/`  
